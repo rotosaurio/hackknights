@@ -7,6 +7,7 @@ import VoiceRecorder from '../components/VoiceRecorder';
 const HomePage: React.FC = () => {
   const [hasResponses, setHasResponses] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
     const checkQuizResponses = async () => {
@@ -17,6 +18,7 @@ const HomePage: React.FC = () => {
           return;
         }
 
+        setIsLoggedIn(true);
         const response = await fetch(`/api/check-quiz-responses?userName=${user.name}`);
         const data = await response.json();
         
@@ -58,7 +60,12 @@ const HomePage: React.FC = () => {
       <header className="bg-[rgb(168,222,162)] flex justify-between items-center p-4">
         <h1 className="text-2xl font-bold">Asistente Médico para Diabéticos</h1>
         <div className="flex space-x-4">
-        <Login /> {}
+          {isLoggedIn && (
+            <Button href="/Bitacora" variant="outline">
+              Mi Bitácora
+            </Button>
+          )}
+          <Login />
         </div>
       </header>
       

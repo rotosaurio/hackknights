@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
@@ -32,6 +31,30 @@ const Bitacora: React.FC = () => {
   const [timeInterval, setTimeInterval] = useState<string>('semanal'); // Estado para el intervalo de tiempo
   const [menuVisible, setMenuVisible] = useState<boolean>(false); // Estado para el menú desplegable
 
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/diabetes-entries', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error al cargar las entradas');
+        }
+        
+        const data = await response.json();
+        setEntries(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchEntries();
+  }, []);
+
   const handleInputChange = (name: keyof DiabetesEntry, value: string) => {
     setFormData({
       ...formData,
@@ -39,66 +62,93 @@ const Bitacora: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.glucosa || !formData.insulina || !formData.medicamentos || !formData.nivelActividad || !formData.comidasPorDia || !formData.desafios) {
+    if (!formData.glucosa || !formData.insulina || !formData.medicamentos || 
+        !formData.nivelActividad || !formData.comidasPorDia || !formData.desafios) {
       alert('Por favor, completa todos los campos.');
       return;
     }
 
-    const newEntry: DiabetesEntry = {
-      ...formData,
-      fecha: new Date().toLocaleDateString(), // Fecha actual
-    };
+    try {
+      const token = localStorage.getItem('token');
+      const newEntry = {
+        ...formData,
+        fecha: new Date().toLocaleDateString()
+      };
 
-    setEntries([newEntry, ...entries]);
-    setFormData({
-      fecha: '',
-      glucosa: '',
-      insulina: '',
-      medicamentos: '',
-      nivelActividad: '',
-      comidasPorDia: '',
-      desafios: '',
-    });
-    setFormVisible(false);  // Ocultar formulario después de enviar
+      const response = await fetch('/api/diabetes-entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newEntry)
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar la entrada');
+      }
+
+      const savedEntry = await response.json();
+      setEntries([savedEntry, ...entries]);
+      setFormData({
+        fecha: '',
+        glucosa: '',
+        insulina: '',
+        medicamentos: '',
+        nivelActividad: '',
+        comidasPorDia: '',
+        desafios: '',
+      });
+      setFormVisible(false);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar la entrada');
+    }
   };
 
   // Función para filtrar las entradas por el intervalo de tiempo
   const filterEntriesByTimeInterval = () => {
     const now = new Date();
-    let filteredEntries = entries;
+    let filteredEntries = [...entries];
 
     switch (timeInterval) {
       case 'semanal':
         filteredEntries = entries.filter(entry => {
-          const entryDate = new Date(entry.fecha);
-          const diffInDays = (now.getTime() - entryDate.getTime()) / (1000 * 3600 * 24);
-          return diffInDays <= 7; // Filtra las entradas de los últimos 7 días
+          const entryDate = new Date(entry.fecha.split('/').reverse().join('-'));
+          const diffTime = Math.abs(now.getTime() - entryDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays <= 7;
         });
         break;
       case 'mensual':
         filteredEntries = entries.filter(entry => {
-          const entryDate = new Date(entry.fecha);
-          return entryDate.getMonth() === now.getMonth() && entryDate.getFullYear() === now.getFullYear();
+          const entryDate = new Date(entry.fecha.split('/').reverse().join('-'));
+          return (
+            entryDate.getMonth() === now.getMonth() &&
+            entryDate.getFullYear() === now.getFullYear()
+          );
         });
         break;
       case 'bimestral':
         filteredEntries = entries.filter(entry => {
-          const entryDate = new Date(entry.fecha);
-          return entryDate.getFullYear() === now.getFullYear() && (entryDate.getMonth() === now.getMonth() || entryDate.getMonth() === now.getMonth() - 1);
+          const entryDate = new Date(entry.fecha.split('/').reverse().join('-'));
+          const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
+          return entryDate >= twoMonthsAgo;
         });
         break;
       case 'semestral':
         filteredEntries = entries.filter(entry => {
-          const entryDate = new Date(entry.fecha);
-          return entryDate.getFullYear() === now.getFullYear() && (entryDate.getMonth() >= now.getMonth() - 5);
+          const entryDate = new Date(entry.fecha.split('/').reverse().join('-'));
+          const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+          return entryDate >= sixMonthsAgo;
         });
         break;
       case 'anual':
         filteredEntries = entries.filter(entry => {
-          const entryDate = new Date(entry.fecha);
+          const entryDate = new Date(entry.fecha.split('/').reverse().join('-'));
           return entryDate.getFullYear() === now.getFullYear();
         });
         break;
@@ -106,7 +156,11 @@ const Bitacora: React.FC = () => {
         break;
     }
 
-    return filteredEntries;
+    return filteredEntries.sort((a, b) => {
+      const dateA = new Date(a.fecha.split('/').reverse().join('-'));
+      const dateB = new Date(b.fecha.split('/').reverse().join('-'));
+      return dateA.getTime() - dateB.getTime();
+    });
   };
 
   // Datos para la gráfica con el intervalo de tiempo seleccionado
@@ -115,17 +169,94 @@ const Bitacora: React.FC = () => {
     datasets: [
       {
         label: 'Glucosa (mg/dL)',
-        data: filterEntriesByTimeInterval().map(entry => parseFloat(entry.glucosa)),
+        data: filterEntriesByTimeInterval().map(entry => Number(entry.glucosa)),
         borderColor: 'rgba(75, 192, 192, 1)',
-        fill: false,
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 6,
+        pointHoverRadius: 8,
       },
       {
         label: 'Insulina (UI)',
-        data: filterEntriesByTimeInterval().map(entry => parseFloat(entry.insulina)),
+        data: filterEntriesByTimeInterval().map(entry => Number(entry.insulina)),
         borderColor: 'rgba(153, 102, 255, 1)',
-        fill: false,
+        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 6,
+        pointHoverRadius: 8,
       },
     ],
+  };
+
+  // Opciones del gráfico con tipos correctos
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          font: {
+            size: 14
+          }
+        }
+      },
+      title: {
+        display: true,
+        text: 'Registro de Glucosa e Insulina',
+        font: {
+          size: 16,
+          weight: 'bold' as const
+        }
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Valores',
+          font: {
+            size: 14
+          }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Fecha',
+          font: {
+            size: 14
+          }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'nearest' as const
+    }
+  } as const;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
+  };
+
+  const handleReturn = () => {
+    window.location.href = '/';
   };
 
   return (
@@ -145,9 +276,9 @@ const Bitacora: React.FC = () => {
           {menuVisible && (
             <div style={styles.menu}>
               <ul style={styles.menuList}>
-                <li style={styles.menuItem}>Perfil</li>
+                <li style={styles.menuItem} onClick={handleReturn}>Regresar</li>
                 <li style={styles.menuItem}>Configuración</li>
-                <li style={styles.menuItem}>Cerrar sesión</li>
+                <li style={styles.menuItem} onClick={handleLogout}>Cerrar sesión</li>
               </ul>
             </div>
           )}
@@ -303,9 +434,8 @@ const Bitacora: React.FC = () => {
           </table>
         </div>
 
-        <div style={styles.chartContainer}>
-          <h2>Gráfica de Datos</h2>
-          <Line data={chartData} options={{ responsive: true }} />
+        <div style={{ ...styles.chartContainer, height: '400px', width: '100%' }}>
+          <Line data={chartData} options={chartOptions} />
         </div>
       </div>
     </div>
@@ -368,6 +498,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   menuItem: {
     padding: '10px 20px',
     cursor: 'pointer',
+    transition: 'background-color 0.3s',
+ 
   },
   toggleButton: {
     padding: '10px 20px',
