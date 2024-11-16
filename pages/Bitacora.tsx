@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import VoiceRecorder from '@/components/VoiceRecorder';
 
 // Registrando los componentes de Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -276,8 +277,6 @@ const Bitacora: React.FC = () => {
           {menuVisible && (
             <div style={styles.menu}>
               <ul style={styles.menuList}>
-                <li style={styles.menuItem} onClick={handleReturn}>Regresar</li>
-                <li style={styles.menuItem}>Configuración</li>
                 <li style={styles.menuItem} onClick={handleLogout}>Cerrar sesión</li>
               </ul>
             </div>
@@ -287,12 +286,18 @@ const Bitacora: React.FC = () => {
 
       <h2>Registro de Salud para la Diabetes</h2>
 
-      {/* Botón para mostrar/ocultar el formulario */}
-      <button 
-        onClick={() => setFormVisible(!formVisible)} 
-        style={styles.toggleButton}>
-        {formVisible ? 'Ocultar Formulario' : 'Agregar Nueva Entrada'}
-      </button>
+      {/* Contenedor para VoiceRecorder y botón */}
+      <div style={{ display: 'flex', alignItems: 'center', position: 'relative', marginLeft: '0' }}>
+        <VoiceRecorder style={{ position: 'absolute', left: '0' }} />
+        <button 
+          onClick={() => setFormVisible(!formVisible)} 
+          style={{ 
+            ...styles.toggleButton, 
+            marginLeft: '20px',
+          }}>
+          {formVisible ? 'Ocultar Formulario' : 'Agregar Nueva Entrada'}
+        </button>
+      </div>
 
       {/* Mostrar el formulario solo si formVisible es true */}
       {formVisible && (

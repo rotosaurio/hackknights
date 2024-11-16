@@ -14,14 +14,17 @@ export default async function handler(
   res: NextApiResponse<ResponseData>
 ) {
   if (req.method !== 'POST') {
+    console.log('Método no permitido:', req.method);
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
   try {
+    console.log('Datos recibidos:', req.body);
     await dbConnect();
     
     const { audioData, userName } = req.body;
     if (!audioData || !userName) {
+      console.log('Faltan datos requeridos:', { audioData, userName });
       return res.status(400).json({ error: 'Faltan datos requeridos' });
     }
 
@@ -39,6 +42,7 @@ export default async function handler(
       userResponses = nonDiabetesResponse.responses;
       isDiabetic = false;
     } else {
+      console.log('No se encontraron respuestas del usuario:', userName);
       return res.status(404).json({ error: 'No se encontraron respuestas del usuario' });
     }
 
@@ -54,9 +58,10 @@ export default async function handler(
       response_format: 'text',
     });
 
+    console.log('Transcripción obtenida:', transcription);
+
     const prompt = `
     Actúa como un nutricionista experto. Basándote en el siguiente perfil de usuario:
-
     ${isDiabetic ? 'PACIENTE CON DIABETES' : 'PACIENTE EN PREVENCIÓN DE DIABETES'}
     
     Datos del paciente:
@@ -89,6 +94,7 @@ export default async function handler(
     });
 
     const recipe = completion.choices[0].message.content || '';
+    console.log('Receta generada:', recipe);
 
     return res.status(200).json({ 
       text: transcription,
