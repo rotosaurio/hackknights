@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import Login from '@/components/login';
 import signin from '@/assets/signin.png';
 const HomePage: React.FC = () => {
   // Componente de botón reutilizable
@@ -17,7 +16,6 @@ const HomePage: React.FC = () => {
       <header className="bg-[rgb(168,222,162)] flex justify-between items-center p-4">
         <h1 className="text-2xl font-bold">Asistente Médico para Diabéticos</h1>
         <div className="flex space-x-4">
-          <Login /> {}
         </div>
       </header>
       
