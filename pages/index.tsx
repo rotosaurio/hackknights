@@ -37,6 +37,7 @@ const HomePage: React.FC = () => {
         </div>
       </main>
     </div>
+
   );
 };
 
