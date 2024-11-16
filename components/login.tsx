@@ -1,10 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 import SignIn from './signin';
+import Question1 from './question1';
 
 const Login: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isQuestionOpen, setIsQuestionOpen] = useState(false);
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -13,7 +15,15 @@ const Login: React.FC = () => {
   const toggleSignInModal = () => {
     setIsSignInOpen(!isSignInOpen);
     setIsOpen(false);
-    
+  };
+
+  const toggleQuestionModal = () => {
+    setIsQuestionOpen(!isQuestionOpen);
+  };
+
+  const handleCreateAccount = () => {
+    toggleSignInModal();
+    toggleQuestionModal();
   };
 
   return (
@@ -59,7 +69,8 @@ const Login: React.FC = () => {
         </div>
       )}
 
-      {isSignInOpen && <SignIn onClose={toggleSignInModal} />}
+      {isSignInOpen && <SignIn onClose={toggleSignInModal} onCreateAccount={handleCreateAccount} />}
+      {isQuestionOpen && <Question1 onClose={toggleQuestionModal} onConfirm={() => console.log("Confirmado")} />}
     </>
   );
 };
