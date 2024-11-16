@@ -289,7 +289,7 @@ const Bitacora: React.FC = () => {
       {/* Barra superior con logo y nombre */}
       <header style={styles.header}>
         <div style={styles.logoContainer}>
-          <img src="/logo.png" alt="Logo" style={styles.logo} />
+          <img src="/Logo.png" alt="Logo" style={styles.logo} />
           <h1 style={styles.pageTitle}>Mi Diario de Salud</h1>
         </div>
 
