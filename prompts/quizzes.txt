@@ -1,0 +1,107 @@
+Encuesta de Prevención de Diabetes
+¡Bienvenido! Si deseas tomar medidas para prevenir la diabetes, necesitamos recopilar información importante sobre tu salud y estilo de vida.
+
+1. Edad
+¿Cuántos años tienes?
+
+2. Altura
+¿Cuál es tu altura? metros
+
+3. Peso
+¿Cuál es tu peso actual? kilogramos
+
+4. Género
+¿Cuál es tu género? (Masculino, Femenino, Otro, Prefiero no decirlo)
+
+5. Historia Familiar
+¿Tienes antecedentes familiares de diabetes? (Ej. padres, hermanos)
+
+6. Nivel de Actividad
+¿Cómo describirías tu nivel de actividad diaria?
+	Sedentario (poca o ninguna actividad física)
+	Ligeramente activo (ejercicio ligero o deportes 1-3 días a la semana)
+	Moderadamente activo (ejercicio moderado 3-5 días a la semana)
+	Muy activo (ejercicio intenso 6-7 días a la semana)
+
+7. Preferencias o Restricciones Dietéticas
+¿Sigues alguna dieta específica o tienes alguna restricción alimentaria que debamos saber?
+
+8. Consumo de Azúcar
+¿Cómo describirías tu consumo de azúcar?
+	Bajo (Ej. rara vez comes dulces o bebidas azucaradas)
+	Moderado (Ej. dulces o bebidas azucaradas ocasionales)
+	Alto (Ej. dulces o bebidas azucaradas frecuentes)
+
+9. Patrones de Comida
+¿Cuántas comidas sueles hacer al día? (Ej. 3 comidas principales, meriendas, etc.)
+
+10. Niveles de Estrés
+¿Con qué frecuencia te sientes estresado?
+	Rara vez
+	A veces
+	A menudo
+	Siempre
+
+11. Patrones de Sueño
+¿Cuántas horas de sueño sueles tener por noche en promedio?
+	Menos de 5 horas
+	5-6 horas
+	7-8 horas
+	Más de 8 horas
+
+
+12. Desafíos Actuales
+¿Hay algo con lo que tengas dificultades al tratar de mantener un estilo de vida saludable? (Ej. dieta, actividad física, manejo del estrés)
+
+
+¡Gracias por responder estas preguntas! Esto nos ayudará a brindarte recomendaciones personalizadas para ayudarte a prevenir la diabetes.
+
+
+
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+Encuesta de Perfil de Salud para la Diabetes
+¡Bienvenido! Antes de comenzar a ayudarte a manejar tu salud, vamos a recopilar algunos datos importantes. Responder estas preguntas nos permitirá adaptar la aplicación a tus necesidades. Puedes responder por voz o texto, según lo que te resulte más cómodo.
+
+1. Edad
+¿Cuántos años tienes?
+
+2. Altura
+¿Cuál es tu altura? Puedes decirlo en pies y pulgadas, o en centímetros.
+
+3. Peso
+¿Cuál es tu peso actual? Puedes decirlo en libras o kilogramos.
+
+4. Género
+¿Cuál es tu género? (Masculino, Femenino, Otro, Prefiero no decirlo)
+
+5. Nivel de Actividad
+¿Cómo describirías tu nivel de actividad diaria?
+	Sedentario (poca o ninguna actividad física)
+	Ligeramente activo (ejercicio ligero o deportes 1-3 días a la semana)
+	Moderadamente activo (ejercicio moderado 3-5 días a la semana)
+	Muy activo (ejercicio intenso 6-7 días a la semana)
+
+6. Condiciones Médicas
+¿Tienes alguna otra condición médica además de la diabetes? (Ej. hipertensión, problemas de colesterol, etc.)
+
+7. Medicamentos
+¿Estás tomando algún medicamento para la diabetes u otras condiciones? Si es así, ¿cuáles?
+
+8. Monitoreo de Niveles de Glucosa
+¿Con qué frecuencia revisas tus niveles de glucosa en sangre? (Diariamente, Semanalmente, Ocasionalmente, Nunca)
+
+9. Preferencias o Restricciones Dietéticas
+¿Sigues alguna dieta específica o tienes alguna restricción alimentaria que debamos saber?
+
+10. Alergias
+¿Tienes alguna alergia alimentaria?
+
+11. Patrones de Comida
+¿Cuántas comidas sueles hacer al día? (Ej. 3 comidas principales, meriendas, etc.)
+
+12. Desafíos Actuales
+¿Hay algo con lo que tengas dificultades al manejar la diabetes? (Ej. dieta, actividad física, recordar medicamentos)
+
+¡Gracias por responder estas preguntas! Esto nos ayudará a brindarte un apoyo personalizado para manejar tu salud.
