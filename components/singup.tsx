@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Question1 from './question1';
+
 const SignIn: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
