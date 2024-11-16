@@ -83,7 +83,7 @@ const Quiz: React.FC = () => {
             id="altura"
             name="altura"
             style={styles.input}
-            placeholder="¿Cuál es tu altura?"
+            placeholder="¿Cuál es tu altura?(en cm)"
             onChange={(e) => handleInputChange('altura', e.target.value)}
             required
             min="0"
