@@ -1,8 +1,40 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Login from '@/components/login';
 import signin from '@/assets/signin.png';
+import VoiceRecorder from '../components/VoiceRecorder';
+
 const HomePage: React.FC = () => {
+  const [hasResponses, setHasResponses] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const checkQuizResponses = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.name) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/check-quiz-responses?userName=${user.name}`);
+        const data = await response.json();
+        
+        setHasResponses(data.hasResponses);
+      } catch (error) {
+        console.error('Error al verificar respuestas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkQuizResponses();
+  }, []);
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
   // Componente de botón reutilizable
   function Button({ href, children, variant = "default" }: { href: string; children: React.ReactNode; variant?: "default" | "outline"; }) {
     const baseClasses = "px-4 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-semibold rounded-full transition-colors duration-300 shadow-lg";
@@ -10,7 +42,16 @@ const HomePage: React.FC = () => {
       default: "bg-white text-black hover:bg-gray-200",
       outline: "bg-transparent text-white border-2 border-white hover:bg-white hover:text-black"
     };
-  } 
+
+    return (
+      <a 
+        href={href} 
+        className={`${baseClasses} ${variantClasses[variant]}`}
+      >
+        {children}
+      </a>
+    );
+  }
 
   return (
     <div className="bg-[rgb(193,255,186)] text-gray-900 min-h-screen flex flex-col">
@@ -36,6 +77,16 @@ const HomePage: React.FC = () => {
           <p className="font-semibold">Tu salud, en tus manos. Mejora tu calidad de vida con el apoyo de esta herramienta completa, confiable y diseñada pensando en ti.</p>
         </div>
       </main>
+
+      {/* Mostrar VoiceRecorder integrado en la página principal */}
+      {hasResponses && (
+        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 mt-8 mb-8">
+          <h2 className="text-2xl font-bold text-center mb-4">
+            Asistente de Voz para Recetas
+          </h2>
+          <VoiceRecorder />
+        </div>
+      )}
     </div>
 
   );

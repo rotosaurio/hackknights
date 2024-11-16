@@ -4,6 +4,7 @@ interface IUser {
   email: string;
   password: string;
   name: string;
+  isDiabetic?: boolean;
 }
 
 const UserSchema = new mongoose.Schema<IUser>({
@@ -11,8 +12,6 @@ const UserSchema = new mongoose.Schema<IUser>({
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
-    trim: true
   },
   password: {
     type: String,
@@ -21,9 +20,11 @@ const UserSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
     required: true
+  },
+  isDiabetic: {
+    type: Boolean,
+    default: null
   }
-}, {
-  collection: 'usuarios'
 });
 
 const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

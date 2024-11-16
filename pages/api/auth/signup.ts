@@ -18,22 +18,20 @@ export default async function handler(
     
     const { email, password, name } = req.body;
 
-    // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
     }
 
-    // Crear nuevo usuario
     const user = new User({
       email,
       password,
-      name
+      name,
+      isDiabetic: null
     });
 
     await user.save();
 
-    // Generar token sin expiración
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       JWT_SECRET
@@ -45,7 +43,8 @@ export default async function handler(
       user: {
         id: user._id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        isDiabetic: user.isDiabetic
       }
     });
 

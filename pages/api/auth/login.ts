@@ -18,17 +18,19 @@ export default async function handler(
     
     const { email, password } = req.body;
 
-    // Buscar usuario
-    const user = await User.findOne({ email, password });
+    // Buscar usuario con contraseña sin encriptar
+    const user = await User.findOne({ 
+      email: email,
+      password: password // Comparación directa de contraseñas
+    });
+
     if (!user) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    // Generar token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '7d' }
+      JWT_SECRET
     );
 
     res.status(200).json({ 
@@ -36,7 +38,8 @@ export default async function handler(
       user: {
         id: user._id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        isDiabetic: user.isDiabetic
       }
     });
 

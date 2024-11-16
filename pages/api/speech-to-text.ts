@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 import dbConnect from '../../lib/mongoose';
-import UserData from '../../models/UserData';
+import { DiabetesQuizResponse, NonDiabetesQuizResponse } from '../../models/QuizResponse';
 
 type ResponseData = {
   text?: string;
@@ -18,32 +18,28 @@ export default async function handler(
   }
 
   try {
-    const mongoose = await dbConnect();
-    console.log('Conectado a MongoDB, buscando usuario...');
+    await dbConnect();
     
-    // Verificar que tenemos una conexión válida
-    if (!mongoose.connection || !mongoose.connection.db) {
-      throw new Error('No se pudo establecer la conexión con la base de datos');
-    }
-    
-    // Verificar la conexión
-    console.log('Estado de la conexión:', mongoose.connection.readyState);
-    console.log('Base de datos actual:', mongoose.connection.db.databaseName);
-    
-    // Intentar buscar directamente en la colección
-    const db = mongoose.connection.db;
-    const collection = db.collection('datosnodiab');
-    const documentoDirecto = await collection.findOne({ user: 'pepe' });
-    console.log('Documento encontrado directamente:', documentoDirecto);
-
-    if (!documentoDirecto) {
-      console.log('No se encontró el usuario pepe');
-      return res.status(404).json({ error: 'Usuario no encontrado en la base de datos' });
+    const { audioData, userName } = req.body;
+    if (!audioData || !userName) {
+      return res.status(400).json({ error: 'Faltan datos requeridos' });
     }
 
-    const { audioData } = req.body;
-    if (!audioData) {
-      return res.status(400).json({ error: 'No se proporcionaron datos de audio' });
+    // Buscar las respuestas del usuario en ambas colecciones
+    const diabetesResponse = await DiabetesQuizResponse.findOne({ userName });
+    const nonDiabetesResponse = await NonDiabetesQuizResponse.findOne({ userName });
+
+    let userResponses;
+    let isDiabetic;
+
+    if (diabetesResponse) {
+      userResponses = diabetesResponse.responses;
+      isDiabetic = true;
+    } else if (nonDiabetesResponse) {
+      userResponses = nonDiabetesResponse.responses;
+      isDiabetic = false;
+    } else {
+      return res.status(404).json({ error: 'No se encontraron respuestas del usuario' });
     }
 
     const openai = new OpenAI({
@@ -59,27 +55,36 @@ export default async function handler(
     });
 
     const prompt = `
-    Basado en los siguientes datos del paciente:
-    ${JSON.stringify(documentoDirecto)}
+    Actúa como un nutricionista experto. Basándote en el siguiente perfil de usuario:
+
+    ${isDiabetic ? 'PACIENTE CON DIABETES' : 'PACIENTE EN PREVENCIÓN DE DIABETES'}
     
-    Y considerando los siguientes ingredientes mencionados en esta transcripción:
+    Datos del paciente:
+    - Edad: ${userResponses.edad}
+    - Altura: ${userResponses.altura}
+    - Peso: ${userResponses.peso}
+    - Nivel de actividad: ${userResponses.nivel_actividad}
+    - Restricciones dietéticas: ${userResponses.restricciones_dieteticas || 'Ninguna'}
+    - Alergias: ${userResponses.alergias || 'Ninguna'}
+    - Patrones de comida: ${userResponses.patrones_comida}
+    ${isDiabetic ? `- Medicamentos: ${userResponses.medicamentos}` : ''}
+    
+    El usuario ha mencionado los siguientes ingredientes en su consulta:
     "${transcription}"
     
-    Por favor:
-    1. Extrae SOLO los ingredientes mencionados en la transcripción, ignorando cualquier otra información.
-    2. Sugiere una receta saludable que:
-       - Use estos ingredientes
-       - Sea apropiada para las condiciones médicas del paciente
-       - Incluya cantidades específicas
-       - Incluya pasos de preparación
-       - Incluya información nutricional
+    Por favor, genera una receta saludable que:
+    1. Use los ingredientes mencionados (si son apropiados para su condición)
+    2. Sea segura para su perfil médico
+    3. Incluya:
+       - Lista de ingredientes con cantidades
+       - Pasos de preparación
+       - Información nutricional
+       - Recomendaciones específicas basadas en su perfil
     `;
-
-    console.log('Prompt enviado a OpenAI:', prompt);
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "gpt-4-mini",
+      model: "gpt-4",
       temperature: 0.7,
     });
 

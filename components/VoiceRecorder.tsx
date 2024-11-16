@@ -74,7 +74,10 @@ export default function VoiceRecorder() {
         const response = await fetch('/api/speech-to-text', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audioData: base64Audio.split(',')[1] }),
+          body: JSON.stringify({ 
+            audioData: base64Audio.split(',')[1],
+            userName: JSON.parse(localStorage.getItem('user') || '{}').name 
+          }),
         });
 
         const data = await response.json();
