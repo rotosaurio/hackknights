@@ -78,13 +78,15 @@ export default async function handler(
     "${transcription}"
     
     Por favor, genera una receta saludable que:
-    1. Use los ingredientes mencionados (si son apropiados para su condición)
+    1. Use ÚNICAMENTE los ingredientes mencionados por el usuario, sin agregar ingredientes adicionales
     2. Sea segura para su perfil médico
     3. Incluya:
        - Lista de ingredientes con cantidades
        - Pasos de preparación
        - Información nutricional
        - Recomendaciones específicas basadas en su perfil
+    
+    IMPORTANTE: No agregues ingredientes que el usuario no haya mencionado.
     `;
 
     const completion = await openai.chat.completions.create({
