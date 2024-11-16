@@ -57,9 +57,9 @@ Encuesta de Prevención de Diabetes
 ¡Gracias por responder estas preguntas! Esto nos ayudará a brindarte recomendaciones personalizadas para ayudarte a prevenir la diabetes.
 
 
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
----------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------
 
 Encuesta de Perfil de Salud para la Diabetes
 ¡Bienvenido! Antes de comenzar a ayudarte a manejar tu salud, vamos a recopilar algunos datos importantes. Responder estas preguntas nos permitirá adaptar la aplicación a tus necesidades. Puedes responder por voz o texto, según lo que te resulte más cómodo.
