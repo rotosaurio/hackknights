@@ -111,7 +111,7 @@ const HomePage: React.FC = () => {
     <div className="bg-white min-h-screen flex flex-col items-center">
       <header className="flex justify-between items-center w-full p-4 bg-white shadow">
         <div className="flex items-center">
-          <img src="/path/to/your/image.png" alt="Logo" className="h-10 mr-4" />
+          <img src="/Logo.png" alt="Logo" className="h-10 mr-4" />
           <h1 className="text-2xl font-bold">Asistente Médico para Diabéticos</h1>
         </div>
       </header>
