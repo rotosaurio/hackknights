@@ -2,7 +2,12 @@
 import React, { useState } from 'react';
 import Question1 from './question1';
 
-const SignIn: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface SignInProps {
+  onClose: () => void;
+  onOpenQuestion1: () => void;
+}
+
+const SignIn: React.FC<SignInProps> = ({ onClose, onOpenQuestion1 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -18,9 +18,14 @@ export default async function handler(
     
     const { email, password, name } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
       return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+    }
+
+    const existingName = await User.findOne({ name });
+    if (existingName) {
+      return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
     }
 
     const user = new User({

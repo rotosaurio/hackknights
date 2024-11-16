@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaStop } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { IoMdClose } from "react-icons/io";
 
 export default function VoiceRecorder() {
   const [transcription, setTranscription] = useState('');
@@ -10,6 +11,9 @@ export default function VoiceRecorder() {
   const [isBrowser, setIsBrowser] = useState(false);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const [recipe, setRecipe] = useState('');
+  const [showTranscription, setShowTranscription] = useState(false);
+  const [showRecipe, setShowRecipe] = useState(false);
+  const [activeWindow, setActiveWindow] = useState<'transcription' | 'recipe' | null>(null);
 
   useEffect(() => {
     setIsBrowser(true);
@@ -88,8 +92,10 @@ export default function VoiceRecorder() {
         
         if (data.text) {
           setTranscription(data.text);
+          setShowTranscription(true);
           if (data.recipe) {
             setRecipe(data.recipe);
+            setShowRecipe(true);
           }
         } else {
           throw new Error('No se recibió texto en la respuesta');
@@ -109,103 +115,118 @@ export default function VoiceRecorder() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className="flex flex-col items-center">
+      <button
+        onClick={isRecording ? stopRecording : startRecording}
+        className={`
+          relative w-12 h-12 rounded-full 
+          flex items-center justify-center 
+          text-white transition-all duration-300 
+          shadow-lg transform hover:scale-105
+          ${isRecording 
+            ? 'bg-red-500 hover:bg-red-600' 
+            : 'bg-blue-500 hover:bg-blue-600'
+          }
+        `}
+      >
+        {isRecording ? (
+          <FaStop className="text-xl" />
+        ) : (
+          <FaMicrophone className="text-xl" />
+        )}
+      </button>
+      <span className="text-sm text-gray-600 mt-2">
+        {isRecording ? 'Grabando...' : 'Generar receta'}
+      </span>
+
+      {/* Contenedor de ventanas flotantes con slider */}
       <AnimatePresence>
-        {isBrowser && (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative"
+        {(showTranscription || showRecipe) && (
+          <motion.div 
+            className="fixed inset-x-0 bottom-0 z-50 flex justify-center"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: "spring", bounce: 0.2 }}
           >
-            <motion.div
-              animate={{
-                scale: isRecording ? [1, 1.2, 1] : 1,
-                boxShadow: isRecording 
-                  ? ['0 0 0 0 rgba(255,255,255,0.4)', '0 0 0 20px rgba(255,255,255,0)'] 
-                  : '0 0 0 0 rgba(255,255,255,0)'
-              }}
-              transition={{
-                duration: 2,
-                repeat: isRecording ? Infinity : 0,
-                ease: "easeInOut"
-              }}
-              className="absolute inset-0 rounded-full"
-            />
-            <button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`
-                relative w-48 h-48 rounded-full 
-                flex items-center justify-center 
-                text-white transition-all duration-300 
-                shadow-lg transform hover:scale-105
-                ${isRecording 
-                  ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600' 
-                  : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'
-                }
-              `}
-            >
-              <div className="flex flex-col items-center">
-                {isRecording ? (
-                  <>
-                    <FaStop className="text-4xl mb-3" />
-                    <div className="font-bold text-xl">Detener</div>
-                    <div className="text-sm mt-2 opacity-90">
-                      Presiona para finalizar
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <FaMicrophone className="text-4xl mb-3" />
-                    <div className="font-bold text-xl">Iniciar</div>
-                    <div className="text-sm mt-2 opacity-90">
-                      Presiona para comenzar
-                    </div>
-                  </>
+            <div className="bg-white rounded-t-2xl shadow-2xl w-full max-w-2xl">
+              {/* Barra superior con pestañas */}
+              <div className="flex justify-between items-center px-6 py-4 border-b">
+                <div className="flex gap-4">
+                  {showTranscription && (
+                    <button
+                      onClick={() => setActiveWindow('transcription')}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        activeWindow === 'transcription' 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      Transcripción
+                    </button>
+                  )}
+                  {showRecipe && (
+                    <button
+                      onClick={() => setActiveWindow('recipe')}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        activeWindow === 'recipe' 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      Receta
+                    </button>
+                  )}
+                </div>
+                <button 
+                  onClick={() => {
+                    setShowTranscription(false);
+                    setShowRecipe(false);
+                    setActiveWindow(null);
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <IoMdClose size={24} />
+                </button>
+              </div>
+
+              {/* Contenido con scroll */}
+              <div className="p-6 max-h-[70vh] overflow-y-auto">
+                {activeWindow === 'transcription' && (
+                  <div className="text-gray-600 text-lg leading-relaxed">
+                    {transcription}
+                  </div>
+                )}
+                {activeWindow === 'recipe' && (
+                  <div className="text-gray-600 text-lg leading-relaxed whitespace-pre-line">
+                    {recipe}
+                  </div>
                 )}
               </div>
-            </button>
+
+              {/* Indicador de arrastre */}
+              <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-2" />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Área de transcripción */}
+      {/* Overlay oscuro */}
       <AnimatePresence>
-        {transcription && (
+        {(showTranscription || showRecipe) && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full mt-8"
-          >
-            <div className="bg-white rounded-xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                Transcripción
-              </h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                {transcription}
-              </p>
-            </div>
-          </motion.div>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-40"
+            onClick={() => {
+              setShowTranscription(false);
+              setShowRecipe(false);
+              setActiveWindow(null);
+            }}
+          />
         )}
       </AnimatePresence>
-
-      {recipe && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="w-full mt-8"
-        >
-          <div className="bg-white rounded-xl shadow-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              Receta Sugerida
-            </h3>
-            <div className="text-gray-600 text-lg leading-relaxed whitespace-pre-line">
-              {recipe}
-            </div>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }

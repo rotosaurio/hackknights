@@ -2,10 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 import dbConnect from '../../lib/mongoose';
 import { DiabetesQuizResponse, NonDiabetesQuizResponse } from '../../models/QuizResponse';
+import DiabetesEntrySchema from '../../models/DiabetesEntry';
+import { verifyToken } from '../../utils/auth';
 
 type ResponseData = {
-  text?: string;
-  recipe?: string;
+  summary?: string;
   error?: string;
 };
 
@@ -14,24 +15,29 @@ export default async function handler(
   res: NextApiResponse<ResponseData>
 ) {
   if (req.method !== 'POST') {
-    console.log('Método no permitido:', req.method);
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
   try {
-    console.log('Datos recibidos:', req.body);
     await dbConnect();
     
-    const { audioData, userName } = req.body;
-    if (!audioData || !userName) {
-      console.log('Faltan datos requeridos:', { audioData, userName });
-      return res.status(400).json({ error: 'Faltan datos requeridos' });
+    // Verificar token y obtener userId
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No autorizado' });
     }
 
-    // Buscar las respuestas del usuario en ambas colecciones
+    const decoded = verifyToken(token);
+    if (!decoded || !decoded.userId) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    const { userName } = req.body;
+
+    // Obtener respuestas del cuestionario
     const diabetesResponse = await DiabetesQuizResponse.findOne({ userName });
     const nonDiabetesResponse = await NonDiabetesQuizResponse.findOne({ userName });
-
+    
     let userResponses;
     let isDiabetic;
 
@@ -42,23 +48,17 @@ export default async function handler(
       userResponses = nonDiabetesResponse.responses;
       isDiabetic = false;
     } else {
-      console.log('No se encontraron respuestas del usuario:', userName);
       return res.status(404).json({ error: 'No se encontraron respuestas del usuario' });
     }
+
+    // Obtener entradas de la bitácora usando userId
+    const entries = await DiabetesEntrySchema.find({ userId: decoded.userId })
+      .sort({ fecha: -1 })
+      .limit(30); // Limitamos a los últimos 30 registros para el resumen
 
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
-
-    const audioBuffer = Buffer.from(audioData, 'base64');
-    const transcription = await openai.audio.transcriptions.create({
-      file: new File([audioBuffer], 'audio.webm', { type: 'audio/webm' }),
-      model: 'whisper-1',
-      language: 'es',
-      response_format: 'text',
-    });
-
-    console.log('Transcripción obtenida:', transcription);
 
     const prompt = `
     Actúa como un nutricionista experto. Basándote en el siguiente perfil de usuario:
@@ -74,19 +74,24 @@ export default async function handler(
     - Patrones de comida: ${userResponses.patrones_comida}
     ${isDiabetic ? `- Medicamentos: ${userResponses.medicamentos}` : ''}
     
-    El usuario ha mencionado los siguientes ingredientes en su consulta:
-    "${transcription}"
-    
-    Por favor, genera una receta saludable que:
-    1. Use ÚNICAMENTE los ingredientes mencionados por el usuario, sin agregar ingredientes adicionales
-    2. Sea segura para su perfil médico
-    3. Incluya:
-       - Lista de ingredientes con cantidades
-       - Pasos de preparación
-       - Información nutricional
-       - Recomendaciones específicas basadas en su perfil
-    
-    IMPORTANTE: No agregues ingredientes que el usuario no haya mencionado.
+    Historial de registros (últimos ${entries.length} registros):
+    ${entries.map(entry => `
+    Fecha: ${entry.fecha}
+    - Glucosa: ${entry.glucosa} mg/dL
+    - Insulina: ${entry.insulina} UI
+    - Medicamentos: ${entry.medicamentos}
+    - Nivel de Actividad: ${entry.nivelActividad}
+    - Comidas por día: ${entry.comidasPorDia}
+    - Desafíos: ${entry.desafios}
+    `).join('\n')}
+
+    Por favor, genera un resumen médico detallado que incluya:
+    1. Estado general de salud
+    2. Tendencias en los niveles de glucosa e insulina
+    3. Evaluación del manejo de la diabetes o riesgo de diabetes
+    4. Recomendaciones específicas para mejorar
+    5. Áreas de preocupación o atención especial
+    6. Progreso y logros notables
     `;
 
     const completion = await openai.chat.completions.create({
@@ -95,13 +100,12 @@ export default async function handler(
       temperature: 0.7,
     });
 
-    const recipe = completion.choices[0].message.content || '';
-    console.log('Receta generada:', recipe);
+    const summary = completion.choices[0].message.content;
+    if (!summary) {
+      return res.status(500).json({ error: 'No se pudo generar el resumen' });
+    }
 
-    return res.status(200).json({ 
-      text: transcription,
-      recipe: recipe
-    });
+    return res.status(200).json({ summary });
 
   } catch (error) {
     console.error('Error:', error);
