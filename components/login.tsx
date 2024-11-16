@@ -61,10 +61,8 @@ const Login: React.FC = () => {
       toggleModal();
 
       if (checkData.hasResponses) {
-        // Mantener al usuario en la página principal donde se mostrará el VoiceRecorder
         window.location.href = '/';
       } else {
-        // Si no tiene respuestas, seguir el flujo normal
         if (data.user.isDiabetic === undefined) {
           setShowQuestion1(true);
         } else {
