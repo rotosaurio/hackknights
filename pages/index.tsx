@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Login from '@/components/login';
-import SignIn from '@/components/signin';
-import FAQSlider from '@/components/FAQSlider';
+import SignIn from '@/components/singup';
+import FAQSlider from '@/components/faqslider';
 import Question1 from '@/components/question1';
 
 const HomePage: React.FC = () => {
@@ -87,27 +87,25 @@ const HomePage: React.FC = () => {
       <main className="flex flex-col items-center justify-center flex-grow p-8">
         {isSignInOpen ? (
           <SignIn onClose={toggleSignInModal} onOpenQuestion1={handleOpenQuestion1} />
-        ) : isLoggedIn ? (
-          isQuestion1Open ? (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <Question1 onDiabeticResponse={handleDiabeticResponse} onClose={() => setIsQuestion1Open(false)} />
-            </div>
-          ) : (
-            <Login onClose={toggleSignInModal} onLoginSuccess={handleLoginSuccess} />
-          )
-        ) : (
+        ) : !isLoggedIn ? (
           <Login onClose={toggleSignInModal} onLoginSuccess={handleLoginSuccess} />
-        )}
+        ) : isQuestion1Open ? (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Question1 onDiabeticResponse={handleDiabeticResponse} onClose={() => setIsQuestion1Open(false)} />
+          </div>
+        ) : null}
 
-        <div className="mt-3 flex items-center">
-          <p className="mr-2">No tienes cuenta</p>
-          <button
-            onClick={toggleSignInModal}
-            className="bg-green-500 text-white py-2 px-4 rounded-full transition duration-300"
-          >
-            Crear cuenta
-          </button>
-        </div>
+        {!isLoggedIn && (
+          <div className="mt-3 flex items-center">
+            <p className="mr-2">No tienes cuenta</p>
+            <button
+              onClick={toggleSignInModal}
+              className="bg-green-500 text-white py-2 px-4 rounded-full transition duration-300"
+            >
+              Crear cuenta
+            </button>
+          </div>
+        )}
 
         <FAQSlider />
 

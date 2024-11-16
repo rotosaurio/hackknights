@@ -45,7 +45,7 @@ const Quiz: React.FC = () => {
         throw new Error('Error al guardar las respuestas');
       }
 
-      window.location.href = '/';
+      window.location.href = '/Bitacora';
 
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al guardar las respuestas');

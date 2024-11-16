@@ -41,26 +41,26 @@ const Login: React.FC<{ onClose: () => void; onLoginSuccess: () => void }> = ({ 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setUserName(data.user.name);
+      onLoginSuccess();
 
       // Verificar si el usuario ya tiene respuestas
       const checkRes = await fetch(`/api/check-quiz-responses?userName=${data.user.name}`);
       const checkData = await checkRes.json();
 
       if (checkData.hasResponses) {
-        window.location.href = '/';
+        onClose();
+        window.location.href = '/Bitacora';
       } else {
         if (data.user.isDiabetic === undefined) {
           setShowQuestion1(true);
         } else {
+          onClose();
           window.location.href = data.user.isDiabetic ? '/quizzdiabetes' : '/quizznodiabetes';
         }
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al iniciar sesión');
     }
-
-    onLoginSuccess();
-    onClose();
   };
 
   const handleDiabeticResponse = async (isDiabetic: boolean) => {
@@ -71,8 +71,6 @@ const Login: React.FC<{ onClose: () => void; onLoginSuccess: () => void }> = ({ 
       if (!user.name || !token) {
         throw new Error('Información de usuario no disponible');
       }
-
-      console.log('Enviando actualización:', { userName: user.name, isDiabetic });
 
       const res = await fetch('/api/auth/update-user', {
         method: 'PUT',
@@ -88,33 +86,18 @@ const Login: React.FC<{ onClose: () => void; onLoginSuccess: () => void }> = ({ 
 
       if (!res.ok) {
         const errorData = await res.json();
-        console.error('Error response:', errorData);
         throw new Error(errorData.error || 'Error al actualizar el usuario');
       }
 
       const data = await res.json();
-      console.log('Respuesta exitosa:', data);
-      
       const updatedUser = { ...user, isDiabetic: data.user.isDiabetic };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-
+      
+      onClose();
       window.location.href = isDiabetic ? '/quizzdiabetes' : '/quizznodiabetes';
-
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al actualizar el usuario');
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUserName(null);
-    setShowDropdown(false);
-    window.location.href = '/';
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
   };
 
   return (
@@ -150,9 +133,11 @@ const Login: React.FC<{ onClose: () => void; onLoginSuccess: () => void }> = ({ 
         </button>
       </form>
       {showQuestion1 && (
-        <Question1 onDiabeticResponse={handleDiabeticResponse} />
+        <Question1 
+          onDiabeticResponse={handleDiabeticResponse} 
+          onClose={() => setShowQuestion1(false)}
+        />
       )}
-      
     </div>
   );
 };

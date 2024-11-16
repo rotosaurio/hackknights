@@ -14,6 +14,7 @@ const Question1: React.FC<Question1Props> = ({ onDiabeticResponse, onClose }) =>
         <button
           onClick={() => {
             onDiabeticResponse(true);
+            onClose();
             window.location.href = '/quizzdiabetes';
           }}
           className="px-6 py-2 bg-[#C1FFBA] text-black rounded-full hover:bg-green-400 transition-colors"
@@ -23,6 +24,7 @@ const Question1: React.FC<Question1Props> = ({ onDiabeticResponse, onClose }) =>
         <button
           onClick={() => {
             onDiabeticResponse(false);
+            onClose();
             window.location.href = '/quizznodiabetes';
           }}
           className="px-6 py-2 bg-[#C1FFBA] text-black rounded-full hover:bg-green-400 transition-colors"
