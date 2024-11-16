@@ -3,9 +3,7 @@ import React, { useState, useEffect } from 'react';
 import SignIn from './singup';
 import Question1 from './question1';
 
-const Login: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isSignInOpen, setIsSignInOpen] = useState(false);
+const Login: React.FC<{ onClose: () => void; onLoginSuccess: () => void }> = ({ onClose, onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,17 +18,6 @@ const Login: React.FC = () => {
       setUserName(user.name);
     }
   }, []);
-
-  const toggleModal = () => {
-    setIsOpen(!isOpen);
-    setError('');
-  };
-
-  const toggleSignInModal = () => {
-    setIsSignInOpen(!isSignInOpen);
-    setIsOpen(false);
-    setError('');
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,8 +46,6 @@ const Login: React.FC = () => {
       const checkRes = await fetch(`/api/check-quiz-responses?userName=${data.user.name}`);
       const checkData = await checkRes.json();
 
-      toggleModal();
-
       if (checkData.hasResponses) {
         window.location.href = '/';
       } else {
@@ -70,10 +55,12 @@ const Login: React.FC = () => {
           window.location.href = data.user.isDiabetic ? '/quizzdiabetes' : '/quizznodiabetes';
         }
       }
-
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al iniciar sesión');
     }
+
+    onLoginSuccess();
+    onClose();
   };
 
   const handleDiabeticResponse = async (isDiabetic: boolean) => {
@@ -131,82 +118,41 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="relative">
-      {userName ? (
-        <>
-          <button 
-            onClick={toggleDropdown}
-            className="text-white font-semibold hover:text-gray-300 transition-colors"
-          >
-            {userName}
-          </button>
-          
-          {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-              <button
-                onClick={handleLogout}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Cerrar Sesión
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <button onClick={toggleModal} className="bg-[rgb(193,255,186)] hover:bg-green-300 text-black px-4 py-2 rounded-full transition duration-300">
-          Iniciar sesión
-        </button>
-      )}
-
-      {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
-          <div className="bg-[rgb(139,184,135)] bg-opacity-90 p-8 rounded-lg shadow-md w-96">
-            <h1 className="bg-[rgb(139,184,135)] text-3xl font-bold mb-6 text-white">Iniciar Sesión</h1>
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <input
-                  type="email"
-                  placeholder="Correo Electrónico"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex flex-col space-y-4">
-                <button
-                  type="submit"
-                  className="w-full bg-[rgb(193,255,186)] hover:bg-green-300 text-black py-2 rounded-full transition duration-300"
-                >
-                  Iniciar Sesión
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleSignInModal}
-                  className="w-full bg-[rgb(193,255,186)] hover:bg-green-300 text-black py-2 rounded-full flex items-center justify-center space-x-2 transition duration-300"
-                >
-                  <span className="material-icons text-black text-xl">Crear cuenta</span>
-                </button>
-              </div>
-            </form>
-          </div>
+    <div className="relative shadow-lg p-6 bg-white rounded-lg max-w-md mx-auto mt-10">
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <h2 className="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div>
+          <input
+            type="email"
+            placeholder="Correo Electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 bg-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
         </div>
-      )}
-
-      {isSignInOpen && <SignIn onClose={toggleSignInModal} />}
-
+        <div>
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 bg-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-[rgb(193,255,186)] hover:bg-green-300 text-black py-2 rounded-full transition duration-300"
+        >
+          Iniciar Sesión
+        </button>
+      </form>
       {showQuestion1 && (
         <Question1 onDiabeticResponse={handleDiabeticResponse} />
       )}
+      
     </div>
   );
 };

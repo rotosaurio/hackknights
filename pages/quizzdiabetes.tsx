@@ -10,11 +10,9 @@ const Quiz: React.FC = () => {
 
   const handleInputChange = (name: string, value: string | number) => {
     if (typeof value === 'number' && value < 0) {
-      // Si el valor es negativo, mostramos un error y no actualizamos el estado
       setError('Por favor, ingresa un valor positivo.');
       return;
     } else {
-      // Si el valor es válido, actualizamos el estado
       setError(null);
     }
 
