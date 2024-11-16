@@ -1,23 +1,24 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = "mongodb+srv://edgarafedo123:baj4aLEtp3UC0yZN@serverlessinstance0.5metinr.mongodb.net/hackathon";
+const MONGODB_URI = process.env.MONGODB_URI || "tu_uri_de_mongodb";
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+  throw new Error('Por favor define la variable de entorno MONGODB_URI');
 }
 
 async function dbConnect() {
   try {
     if (mongoose.connection.readyState >= 1) {
-      console.log('Usando conexión existente');
-      return mongoose;
+      return;
     }
-    
-    console.log('Conectando a MongoDB...');
-    await mongoose.connect(MONGODB_URI);
-    console.log('MongoDB conectado exitosamente');
-    
-    return mongoose;
+
+    return await mongoose.connect(MONGODB_URI, {
+      ssl: true,
+      tls: true,
+      tlsAllowInvalidCertificates: true,
+      retryWrites: true,
+      w: "majority"
+    });
     
   } catch (error) {
     console.error('Error conectando a MongoDB:', error);
