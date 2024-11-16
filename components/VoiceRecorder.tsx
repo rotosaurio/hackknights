@@ -115,50 +115,29 @@ export default function VoiceRecorder() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <AnimatePresence>
-        {isBrowser && (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative"
-          >
-            <motion.div
-              animate={{
-                scale: isRecording ? [1, 1.2, 1] : 1,
-                boxShadow: isRecording 
-                  ? ['0 0 0 0 rgba(255,255,255,0.4)', '0 0 0 20px rgba(255,255,255,0)'] 
-                  : '0 0 0 0 rgba(255,255,255,0)'
-              }}
-              transition={{
-                duration: 2,
-                repeat: isRecording ? Infinity : 0,
-                ease: "easeInOut"
-              }}
-              className="absolute inset-0 rounded-full"
-            />
-            <button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`
-                relative w-12 h-12 rounded-full 
-                flex items-center justify-center 
-                text-white transition-all duration-300 
-                shadow-lg transform hover:scale-105
-                ${isRecording 
-                  ? 'bg-red-500 hover:bg-red-600' 
-                  : 'bg-blue-500 hover:bg-blue-600'
-                }
-              `}
-            >
-              {isRecording ? (
-                <FaStop className="text-xl" />
-              ) : (
-                <FaMicrophone className="text-xl" />
-              )}
-            </button>
-          </motion.div>
+    <div className="flex flex-col items-center">
+      <button
+        onClick={isRecording ? stopRecording : startRecording}
+        className={`
+          relative w-12 h-12 rounded-full 
+          flex items-center justify-center 
+          text-white transition-all duration-300 
+          shadow-lg transform hover:scale-105
+          ${isRecording 
+            ? 'bg-red-500 hover:bg-red-600' 
+            : 'bg-blue-500 hover:bg-blue-600'
+          }
+        `}
+      >
+        {isRecording ? (
+          <FaStop className="text-xl" />
+        ) : (
+          <FaMicrophone className="text-xl" />
         )}
-      </AnimatePresence>
+      </button>
+      <span className="text-sm text-gray-600 mt-2">
+        {isRecording ? 'Grabando...' : 'Generar receta'}
+      </span>
 
       {/* Contenedor de ventanas flotantes con slider */}
       <AnimatePresence>

@@ -4,12 +4,45 @@ import Login from '@/components/login';
 import SignIn from '@/components/singup';
 import FAQSlider from '@/components/faqslider';
 import Question1 from '@/components/question1';
+import { useRouter } from 'next/navigation';
 
 const HomePage: React.FC = () => {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAccountCreated, setIsAccountCreated] = useState(false);
   const [isQuestion1Open, setIsQuestion1Open] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      if (token && user) {
+        try {
+          // Verificar si el usuario ya completó el cuestionario
+          const userName = JSON.parse(user).name;
+          const response = await fetch(`/api/check-quiz-responses?userName=${userName}`);
+          const data = await response.json();
+
+          if (data.hasResponses) {
+            // Si ya completó el cuestionario, redirigir a la bitácora
+            router.push('/Bitacora');
+          } else {
+            // Si no ha completado el cuestionario, establecer como logueado
+            setIsLoggedIn(true);
+          }
+        } catch (error) {
+          console.error('Error al verificar el cuestionario:', error);
+          setIsLoggedIn(true);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkSession();
+  }, [router]);
 
   const toggleSignInModal = () => {
     setIsSignInOpen(!isSignInOpen);
@@ -20,8 +53,8 @@ const HomePage: React.FC = () => {
   };
 
   const handleOpenQuestion1 = () => {
-    setIsSignInOpen(false); // Cierra el modal de SignIn
-    setIsQuestion1Open(true); // Abre el modal de Question1
+    setIsSignInOpen(false);
+    setIsQuestion1Open(true);
   };
 
   const handleDiabeticResponse = async (isDiabetic: boolean) => {
@@ -66,13 +99,12 @@ const HomePage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, []);
-
   if (isLoggedIn === null) {
-    return <div>Cargando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   return (

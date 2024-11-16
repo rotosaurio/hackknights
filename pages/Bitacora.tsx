@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import HealthSummaryButton from '@/components/HealthSummaryButton';
+import { useRouter } from 'next/navigation';
 
 // Registrando los componentes de Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -31,30 +33,42 @@ const Bitacora: React.FC = () => {
   const [formVisible, setFormVisible] = useState<boolean>(false);  // Control de visibilidad del formulario
   const [timeInterval, setTimeInterval] = useState<string>('semanal'); // Estado para el intervalo de tiempo
   const [menuVisible, setMenuVisible] = useState<boolean>(false); // Estado para el menú desplegable
+  const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchEntries = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/diabetes-entries', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Error al cargar las entradas');
-        }
-        
-        const data = await response.json();
-        setEntries(data);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
+    setIsClient(true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/');
+    }
+  }, [router]);
 
-    fetchEntries();
-  }, []);
+  useEffect(() => {
+    if (isClient) {
+      const fetchEntries = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch('/api/diabetes-entries', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Error al cargar las entradas');
+          }
+          
+          const data = await response.json();
+          setEntries(data);
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      };
+
+      fetchEntries();
+    }
+  }, [isClient]);
 
   const handleInputChange = (name: keyof DiabetesEntry, value: string) => {
     setFormData({
@@ -251,14 +265,24 @@ const Bitacora: React.FC = () => {
   } as const;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/';
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/';
+    }
   };
 
   const handleReturn = () => {
     window.location.href = '/';
   };
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -286,17 +310,30 @@ const Bitacora: React.FC = () => {
 
       <h2>Registro de Salud para la Diabetes</h2>
 
-      {/* Contenedor para VoiceRecorder y botón */}
-      <div style={{ display: 'flex', alignItems: 'center', position: 'relative', marginLeft: '0' }}>
-        <VoiceRecorder style={{ position: 'absolute', left: '0' }} />
+      {/* Contenedor para VoiceRecorder y botones */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        position: 'relative', 
+        marginLeft: '0',
+        gap: '20px'
+      }}>
+        <div style={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          marginRight: '20px'
+        }}>
+          <VoiceRecorder />
+        </div>
         <button 
           onClick={() => setFormVisible(!formVisible)} 
           style={{ 
             ...styles.toggleButton, 
-            marginLeft: '20px',
           }}>
           {formVisible ? 'Ocultar Formulario' : 'Agregar Nueva Entrada'}
         </button>
+        <HealthSummaryButton />
       </div>
 
       {/* Mostrar el formulario solo si formVisible es true */}
